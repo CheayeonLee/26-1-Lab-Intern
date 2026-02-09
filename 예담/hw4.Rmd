@@ -1,0 +1,64 @@
+---
+title: "homework4444"
+output:
+  word_document: default
+  html_document: default
+date: "2024-11-04"
+---
+```{r}
+library(dplyr)
+library(ggplot2)
+```
+
+
+```{r}
+library(nycflights13)
+
+#1.
+Texas=filter(flights, dest == "DFW"|dest=="IAH"|dest=="HOU")
+Texas
+
+#2.
+Texas%>%ggplot(aes(dep_delay,arr_delay))+geom_point(alpha=0.5,size=0.5)+geom_abline(intercept=0,slope=1,color="white",linewidth=2)
+#y=x선을 그려서 두변수의 관계에 대해 비교에 용이하게 보았다.직선위 위쪽은 출발할때 생긴 delay 가 make up 된경우이고, 직선아래쪽은 출발과 도착모두 딜레이가 생긴 경우인데,0-200분의 dep_delay에서 전체적으로 delay가 함께 많이 발생하였다. 그러나 0-200분사이에는 도착떄의 delay가 매꿔진 경우도 많은것을 확인할수 있다.
+
+#3
+Texas%>%mutate(pure_delay=arr_delay-dep_delay)%>%ggplot(aes(pure_delay))+geom_histogram(binwidth=1)+geom_vline(xintercept=0,color="yellow",linewidth=2)
+
+Texas%>%mutate(pure_delay=arr_delay-dep_delay)%>%ggplot(aes(pure_delay))+geom_density()
+#전체적으로 delay는 -50~50 근방에 몰려있고, 노란직선 왼쪽의 면적이 크기때문에 비행중 delay가 음수인경우가 많은것을보아 출발때 생긴 지연이 비행중 많이 보완된것을 알수 있다.전반적으로 대부분의 비행중 지연이 음수일때, 그것은 출발때의 비행지연이 보완된 비행기가 많고, 오른쪽 꼬리가 긴 비대칭 분포로 보아,일부 소수 비행기는 극단적인 지연을 겪었다고 볼수있다. 
+
+#4
+A= Texas%>% transmute(date=as.Date(paste(year,month,day, sep="-")))%>%filter(!is.na(date))%>%group_by(date)%>% summarize(count=n())            A%>%ggplot(aes(date, count))+geom_line()                                                         
+#5.
+
+summary_data <- Texas %>% filter(dest %in% c("IAH", "DFW", "HOU")) %>%transmute(date = as.Date(paste(year, month, day, sep = "-")),weekday = weekdays(date, abbreviate = TRUE),dest) %>%group_by(weekday, dest) %>%summarize(count = n(), .groups = 'drop') %>%mutate(weekday = factor(weekday, levels = c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")), dest = factor(dest, levels = c("IAH", "DFW", "HOU"))) 
+
+ggplot(summary_data,aes(weekday,count))+geom_bar(stat="identity")+facet_wrap(~dest)
+
+  
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
